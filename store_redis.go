@@ -134,6 +134,11 @@ func (s RedisStore) Get(key string, rate Rate) (Context, error) {
 	ttl := int64(values[1])
 	remaining := int64(0)
 
+	// fallback for case where setting expiry failed
+	if ttl == -1 {
+		c.Do("EXPIRE", key, rate.Period.Seconds())
+	}
+
 	if count < rate.Limit {
 		remaining = rate.Limit - count
 	}
